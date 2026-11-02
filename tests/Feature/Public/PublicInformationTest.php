@@ -67,9 +67,34 @@ test('initial HTML includes escaped canonical and social metadata without SSR', 
     $response = $this->get(route('contact', ['utm_source' => 'test']));
     $response->assertSee('<link data-inertia="canonical" rel="canonical" href="https://travel.example/contact">', false)
         ->assertSee('property="og:url" content="https://travel.example/contact"', false)
+        ->assertSee('property="og:locale" content="id_ID"', false)
         ->assertSee('property="og:image" content="https://travel.example/brand.jpg"', false)
+        ->assertSee('name="twitter:title"', false)
+        ->assertSee('name="twitter:description"', false)
+        ->assertSee('name="twitter:image" content="https://travel.example/brand.jpg"', false)
+        ->assertSee('type="application/ld+json"', false)
+        ->assertSee('"@type":"TravelAgency"', false)
         ->assertSee('name="robots" content="index, follow"', false)
         ->assertDontSee('<script>alert(1)</script>', false);
+});
+
+test('public structured data uses the configured domain and managed company data', function () {
+    SiteSetting::factory()->create(['key' => 'company_name', 'value' => 'Arcadia Travel']);
+    SiteSetting::factory()->create(['key' => 'company_email', 'value' => 'hello@arcadia.example']);
+    SiteSetting::factory()->create(['key' => 'company_phone', 'value' => '+62 812 3456 7890']);
+    SiteSetting::factory()->create(['key' => 'company_address', 'value' => 'Jakarta, Indonesia']);
+    SiteSetting::factory()->create(['key' => 'instagram_url', 'value' => 'https://instagram.com/arcadia']);
+
+    $this->get(route('home'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('seo.site_name', 'Arcadia Travel')
+            ->where('seo.structured_data.@graph.0.@type', 'TravelAgency')
+            ->where('seo.structured_data.@graph.0.url', 'https://travel.example')
+            ->where('seo.structured_data.@graph.0.email', 'hello@arcadia.example')
+            ->where('seo.structured_data.@graph.0.address.streetAddress', 'Jakarta, Indonesia')
+            ->where('seo.structured_data.@graph.0.sameAs.0', 'https://instagram.com/arcadia')
+            ->where('seo.structured_data.@graph.1.@type', 'WebSite')
+            ->where('seo.structured_data.@graph.1.inLanguage', 'id-ID'));
 });
 
 test('pagination has its own canonical without tracking parameters', function () {
@@ -94,9 +119,14 @@ test('sitemap is valid XML and includes only public pages and active packages', 
     $response = $this->get(route('sitemap'))->assertOk()->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
     $xml = simplexml_load_string($response->getContent());
     $urls = array_map(fn ($entry) => (string) $entry->loc, iterator_to_array($xml->url, false));
+    $activePackageUrl = 'https://travel.example/packages/'.$active->slug;
+    $activePackageEntry = collect(iterator_to_array($xml->url, false))
+        ->first(fn ($entry) => (string) $entry->loc === $activePackageUrl);
+
     expect($urls)->toContain('https://travel.example/', 'https://travel.example/about', 'https://travel.example/contact', 'https://travel.example/packages', 'https://travel.example/packages/'.$active->slug)
         ->not->toContain('https://travel.example/packages/'.$inactive->slug)
         ->toHaveCount(5);
+    expect((string) $activePackageEntry->lastmod)->toBe($active->updated_at->toIso8601String());
 });
 
 test('robots advertises sitemap when indexing is enabled', function () {

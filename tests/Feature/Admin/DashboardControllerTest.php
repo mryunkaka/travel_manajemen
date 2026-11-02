@@ -135,3 +135,11 @@ test('staff sees zero-value dashboard states when no operational records exist',
             ->has('upcoming_departures', 0)
             ->has('recent_bookings', 0));
 });
+
+test('admin root redirects authorized users to the admin dashboard', function () {
+    $admin = dashboardModuleUser('admin@travel.com');
+
+    $this->actingAs($admin)
+        ->get('/admin')
+        ->assertRedirect(route('admin.dashboard'));
+});

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\TestimonialController;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')
@@ -17,6 +18,7 @@ Route::prefix('admin')
     ->middleware(['auth', 'role:admin|staff'])
     ->group(function () {
 
+        Route::get('/', fn (): RedirectResponse => redirect()->route('admin.dashboard'))->name('index');
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
         Route::controller(SiteSettingController::class)

@@ -19,7 +19,12 @@ class AboutController extends Controller
         return Inertia::render('public/about', [
             'site' => $site,
             'content' => ['title' => $settings['about_title'], 'description' => $settings['about_description']],
-            'seo' => $seo->handle('Tentang Kami — '.$site['company_name'], Str::limit($settings['about_description'], 155), 'about'),
+            'seo' => $seo->handle(
+                'Tentang Kami — '.$site['company_name'],
+                Str::limit($settings['about_description'], 155),
+                'about',
+                site: $site,
+            ),
         ]);
     }
 }

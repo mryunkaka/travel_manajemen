@@ -98,4 +98,6 @@ export type SeoMeta = {
     image: string | null;
     type: string;
     robots: string;
+    site_name: string;
+    structured_data: Record<string, unknown>;
 };

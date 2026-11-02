@@ -46,6 +46,7 @@ class PublicPackageController extends Controller
                 'Temukan paket wisata pilihan untuk perjalanan berkesan bersama '.$site['company_name'].'.',
                 'packages.index', $packages->currentPage() > 1 ? ['page' => $packages->currentPage()] : [],
                 $packages->items()[0]['cover_url'] ?? null,
+                $site,
             ),
             'packages' => $packages,
         ]);
@@ -66,6 +67,7 @@ class PublicPackageController extends Controller
             'seo' => app(GetPublicSeo::class)->handle(
                 $package->title.' — '.$site['company_name'], Str::limit($package->description, 155),
                 'packages.show', ['package' => $package->slug], $package->getFirstMediaUrl('cover', 'hero'),
+                $site,
             ),
             'package' => $this->packageDetailData($package),
             'booking' => [

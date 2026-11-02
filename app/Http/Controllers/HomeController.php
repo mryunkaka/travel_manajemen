@@ -69,8 +69,10 @@ class HomeController extends Controller
                 'avatar_url' => $testimonial->getFirstMediaUrl('photo', 'avatar'),
             ]);
 
+        $site = $getPublicSiteData->handle($settings);
+
         return Inertia::render('public/home', [
-            'site' => $getPublicSiteData->handle($settings),
+            'site' => $site,
             'content' => [
                 'hero_title' => $settings['hero_title'],
                 'hero_subtitle' => $settings['hero_subtitle'],
@@ -87,6 +89,7 @@ class HomeController extends Controller
             'seo' => app(GetPublicSeo::class)->handle(
                 $settings['seo_default_title'], $settings['seo_default_description'], 'home',
                 image: $banners->firstWhere('image_url', '!=', '')['image_url'] ?? $featuredPackages->first()['cover_url'] ?? null,
+                site: $site,
             ),
             'banners' => $banners,
             'featured_packages' => $featuredPackages,

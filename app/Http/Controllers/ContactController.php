@@ -15,7 +15,12 @@ class ContactController extends Controller
 
         return Inertia::render('public/contact', [
             'site' => $site,
-            'seo' => $seo->handle('Kontak — '.$site['company_name'], 'Hubungi '.$site['company_name'].' untuk informasi paket wisata dan konsultasi perjalanan.', 'contact'),
+            'seo' => $seo->handle(
+                'Kontak — '.$site['company_name'],
+                'Hubungi '.$site['company_name'].' untuk informasi paket wisata dan konsultasi perjalanan.',
+                'contact',
+                site: $site,
+            ),
         ]);
     }
 }

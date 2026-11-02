@@ -45,14 +45,23 @@
                 <meta data-inertia="description" name="description" content="{{ $seo['description'] }}">
                 <link data-inertia="canonical" rel="canonical" href="{{ $seo['canonical'] }}">
                 <meta data-inertia="robots" name="robots" content="{{ $seo['robots'] }}">
+                <meta data-inertia="og:locale" property="og:locale" content="id_ID">
+                <meta data-inertia="og:site_name" property="og:site_name" content="{{ $seo['site_name'] }}">
                 <meta data-inertia="og:title" property="og:title" content="{{ $seo['title'] }}">
                 <meta data-inertia="og:description" property="og:description" content="{{ $seo['description'] }}">
                 <meta data-inertia="og:type" property="og:type" content="{{ $seo['type'] }}">
                 <meta data-inertia="og:url" property="og:url" content="{{ $seo['canonical'] }}">
                 @if ($seo['image'])
                     <meta data-inertia="og:image" property="og:image" content="{{ $seo['image'] }}">
+                    <meta data-inertia="og:image:alt" property="og:image:alt" content="{{ $seo['title'] }}">
                 @endif
                 <meta data-inertia="twitter:card" name="twitter:card" content="{{ $seo['image'] ? 'summary_large_image' : 'summary' }}">
+                <meta data-inertia="twitter:title" name="twitter:title" content="{{ $seo['title'] }}">
+                <meta data-inertia="twitter:description" name="twitter:description" content="{{ $seo['description'] }}">
+                @if ($seo['image'])
+                    <meta data-inertia="twitter:image" name="twitter:image" content="{{ $seo['image'] }}">
+                @endif
+                <script data-inertia="structured-data" type="application/ld+json">{!! json_encode($seo['structured_data'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>
             @else
                 <title>{{ config('app.name', 'Laravel') }}</title>
             @endif
