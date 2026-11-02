@@ -123,6 +123,19 @@ describe('invoice download and deletion', function () {
             ->assertHeader('content-type', 'application/pdf');
     });
 
+    test('staff can preview a generated invoice pdf inline', function () {
+        $staff = invoiceModuleUser('staff@travel.com');
+        $invoice = Invoice::factory()->create([
+            'invoice_number' => 'INV-20260903-0001',
+        ]);
+
+        $response = $this->actingAs($staff)
+            ->get(route('admin.invoices.download', ['invoice' => $invoice->id, 'view' => 1]));
+
+        $response->assertOk()->assertHeader('content-type', 'application/pdf');
+        expect($response->headers->get('content-disposition'))->toStartWith('inline;');
+    });
+
     test('the pdf template escapes customer and package content', function () {
         $customer = Customer::factory()->create([
             'name' => '<script>alert("customer")</script>',

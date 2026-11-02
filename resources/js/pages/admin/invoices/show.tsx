@@ -1,5 +1,5 @@
 import { Form, Head, Link, router, usePage } from '@inertiajs/react';
-import { Download, MapPin, Trash2 } from 'lucide-react';
+import { ChevronDown, Download, Eye, FileText, MapPin, Trash2 } from 'lucide-react';
 import { download } from '@/actions/App/Http/Controllers/Admin/InvoiceController';
 import {
     destroy as destroyPayment,
@@ -9,6 +9,12 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/pages/admin/bookings/booking-form';
@@ -57,12 +63,33 @@ export default function ShowInvoice({ invoice }: { invoice: InvoiceData }) {
                     <div className="flex items-center gap-2">
                         <InvoiceStatusBadge status={invoice.status} />
                         {auth.permissions.downloadInvoices && (
-                            <Button variant="outline" asChild>
-                                <a href={download.url(invoice.id)}>
-                                    <Download />
-                                    Unduh PDF
-                                </a>
-                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline">
+                                        <FileText />
+                                        PDF
+                                        <ChevronDown />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <a
+                                            href={download.url(invoice.id, { query: { view: true } })}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                        >
+                                            <Eye />
+                                            Lihat PDF
+                                        </a>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <a href={download.url(invoice.id)}>
+                                            <Download />
+                                            Unduh PDF
+                                        </a>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
                 </div>

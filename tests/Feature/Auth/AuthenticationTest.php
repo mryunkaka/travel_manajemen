@@ -22,6 +22,22 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
+test('users behind the local HTTPS proxy are redirected to the secure dashboard URL', function () {
+    $user = User::factory()->create();
+
+    $response = $this->withServerVariables([
+        'HTTP_HOST' => 'travel.saijaan.my.id',
+        'HTTP_X_FORWARDED_HOST' => 'travel.saijaan.my.id',
+        'HTTP_X_FORWARDED_PROTO' => 'https',
+        'REMOTE_ADDR' => '127.0.0.1',
+    ])->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $response->assertRedirect('https://travel.saijaan.my.id/dashboard');
+});
+
 test('users with two factor enabled are redirected to two factor challenge', function () {
     $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 

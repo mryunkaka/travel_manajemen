@@ -5,6 +5,7 @@ use App\Models\SiteSetting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -78,6 +79,15 @@ test('initial HTML includes escaped canonical and social metadata without SSR', 
         ->assertDontSee('<script>alert(1)</script>', false);
 });
 
+test('public media URLs stay relative to the active domain', function () {
+    Route::get('/test-public-storage-url', fn () => Storage::disk('public')->url('sample.jpg'));
+
+    $this->withServerVariables([
+        'HTTP_HOST' => 'travel.saijaan.my.id',
+        'HTTPS' => 'on',
+    ])->get('/test-public-storage-url')->assertSee('/storage/sample.jpg');
+});
+
 test('public structured data uses the configured domain and managed company data', function () {
     SiteSetting::factory()->create(['key' => 'company_name', 'value' => 'Arcadia Travel']);
     SiteSetting::factory()->create(['key' => 'company_email', 'value' => 'hello@arcadia.example']);
@@ -110,6 +120,14 @@ test('package canonical uses its slug and cover metadata contract', function () 
         ->assertInertia(fn (Assert $page) => $page
             ->where('seo.canonical', 'https://travel.example/packages/'.$package->slug)
             ->where('seo.type', 'website'));
+});
+
+test('legacy package URLs redirect to their canonical routes', function () {
+    $package = Package::factory()->create();
+
+    $this->get('/paket')->assertStatus(301)->assertRedirect(route('packages.index'));
+    $this->get('/paket/'.$package->slug)
+        ->assertStatus(301)->assertRedirect(route('packages.show', ['package' => $package->slug]));
 });
 
 test('sitemap is valid XML and includes only public pages and active packages', function () {

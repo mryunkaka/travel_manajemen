@@ -125,7 +125,7 @@ class InvoiceController extends Controller
         return to_route('admin.invoices.index');
     }
 
-    public function download(Invoice $invoice): HttpResponse
+    public function download(Invoice $invoice, Request $request): HttpResponse
     {
         $invoice->load(['booking.customer', 'booking.package', 'payments' => fn ($query) => $query->where('status', 'paid')->oldest('paid_at')]);
         $invoice->synchronizeStatus();
@@ -134,12 +134,18 @@ class InvoiceController extends Controller
             ->pluck('value', 'key')
             ->all();
 
-        return Pdf::loadView('pdf.invoice', [
+        $pdf = Pdf::loadView('pdf.invoice', [
             'invoice' => $invoice,
             'settings' => $settings,
             'paidAmount' => $invoice->paidAmount(),
             'remainingAmount' => $invoice->remainingAmount(),
-        ])->setPaper('a4')->download($invoice->invoice_number.'.pdf');
+        ])->setPaper('a4');
+
+        if ($request->boolean('view')) {
+            return $pdf->stream($invoice->invoice_number.'.pdf');
+        }
+
+        return $pdf->download($invoice->invoice_number.'.pdf');
     }
 
     /** @return array<string, mixed> */
